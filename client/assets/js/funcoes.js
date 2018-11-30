@@ -6,6 +6,9 @@ document.querySelector('#btn-buscar').addEventListener('click', function (envent
     //Montar formulario
     montarPainel();
 });
+//defin indo uma tarefa global para auxiliar na alteracao da tarefa
+let tarefa = {};
+    
 
 //Funçao para montar os cartões
 function montarPainel() {
@@ -35,7 +38,7 @@ function montarPainel() {
                                     <div class="card">
                                     <div class="card-body">
                                       <div>
-                                        <span class="card-subtitle mb-2 text-muted">${item.data}</span>
+                                        <span class="card-subtitle mb-2 text-muted">${dataToString(item.data)}</span>
                                       </div>
                                       <p class="card-text">${item.descricao}</p>
                                     </div>
@@ -43,6 +46,11 @@ function montarPainel() {
                               `;
                     //Adicionando o cartão no painel de tarefas
                     painelTarefas.appendChild(cartao);
+
+                    cartao.addEventListener('click', function(event){
+                        montarFormularioAlterar(item.id);
+                        tarefa.id = item.id;
+                    });
 
                 });
             }
@@ -119,7 +127,7 @@ function montarFormularioAlterar(id) {
             //CAmpos do formulario
             document.querySelector('#idTarefa').value = tarefa.id;
             document.querySelector('#descricao-tarefa').value = tarefa.descricao;
-            document.querySelector('#data-tarefa').value = tarefa.data;
+            document.querySelector('#data-tarefa').value = dataToInput(tarefa.data);
 
             //Mostrar o modal
             $('#modal').modal('show');
@@ -140,3 +148,39 @@ function montarFormularioAlterar(id) {
         });
 
 }
+
+//Quando o botão alterar for clicado
+document.querySelector('#btn-alterar').addEventListener('click', function(event){
+    event.preventDefault();
+//Dados do formulario
+    tarefa.descricao = document.querySelector('#descricao-tarefa').value; 
+    tarefa.data = document.querySelector('#data-tarefa').value;
+
+    let promise = alterarTarefa(tarefa);
+    promise
+        .then(function(resolve){
+            montarPainel();
+            monstrarMensagem('Tarefa alterada com sucesso!', "s");
+        })
+        .catch(function (erro){
+            monstrarMensagem(erro, 'd');
+        });
+        //Fechando o formulario
+        $('#modal').modal('toggle');
+});
+//Quando clicar no botao deletar
+document.querySelector('#btn-deletar').addEventListener('click', function(event){
+    event.preventDefault();
+
+    let promise = deletarTarefa(tarefa.id);
+    promise
+        .then(function(resolve){
+            monstrarMensagem('Tarefa deletada com sucesso!', 's');
+            montarPainel();
+        })
+        .catch(function(erro){
+            monstrarMensagem(erro, 'd');
+        });
+        //Fechando o formulario
+        $('#modal').modal('toggle');
+})
